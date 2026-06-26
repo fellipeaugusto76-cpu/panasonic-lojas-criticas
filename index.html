@@ -31,7 +31,40 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 /* LAYOUT */
 .app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
-.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+
+/* MOBILE MENU BUTTON + OVERLAY (hidden on desktop) */
+.menu-btn{display:none;background:none;border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:6px;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0}
+.menu-btn svg{width:18px;height:18px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40}
+.sidebar-overlay.show{display:block}
+.sidebar-close{display:none;background:none;border:none;color:var(--text-secondary);width:28px;height:28px;align-items:center;justify-content:center;cursor:pointer;margin-left:auto;font-size:18px;line-height:1}
+
+@media (max-width:768px){
+  html,body{overflow:auto}
+  .app{position:relative}
+  .menu-btn{display:flex}
+  .sidebar{
+    position:fixed;top:0;left:0;height:100vh;width:260px;max-width:82vw;
+    transform:translateX(-100%);transition:transform .25s ease;z-index:50;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-logo{display:flex;align-items:center}
+  .sidebar-close{display:flex}
+  .main{width:100%}
+  .main-header{padding:12px 14px;gap:10px;flex-wrap:wrap}
+  .page-title{font-size:15px}
+  .content{padding:14px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .spark-section{grid-template-columns:1fr!important}
+  .header-filters{margin-left:0;width:100%;order:3;flex-wrap:wrap}
+  .header-filters select{flex:1 1 auto;min-width:0}
+  #update-badge{margin-left:0!important;order:2}
+  .coord-kpis{grid-template-columns:repeat(2,1fr)!important}
+  .data-table{display:block;overflow-x:auto;white-space:nowrap}
+  .filter-row{flex-wrap:wrap}
+  .filter-row select{flex:1 1 auto}
+}
 
 /* SIDEBAR */
 .sidebar-logo{padding:20px 16px 14px;border-bottom:1px solid var(--border)}
@@ -79,6 +112,7 @@ select option{background:var(--card)}
 .kpi-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;font-weight:600}
 .kpi-value{font-size:32px;font-weight:700;letter-spacing:-.04em;font-family:var(--mono);color:var(--white);line-height:1}
 .kpi-value.danger{color:var(--danger)}
+.kpi-value.warn{color:var(--warn)}
 .kpi-value.ok{color:var(--ok)}
 .kpi-sub{font-size:11px;color:var(--text-muted);margin-top:6px}
 .kpi-trend{position:absolute;top:18px;right:18px;font-size:11px;font-family:var(--mono);color:var(--text-muted)}
@@ -133,6 +167,9 @@ svg.spark .label-y{fill:var(--text-muted);font-size:9px;font-family:'JetBrains M
 .coord-kpi{background:var(--card);border:1px solid var(--border);padding:14px 16px}
 .coord-kpi-label{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;font-weight:600}
 .coord-kpi-val{font-size:24px;font-weight:700;font-family:var(--mono);letter-spacing:-.04em;color:var(--white)}
+.coord-kpi-val.danger{color:var(--danger)}
+.coord-kpi-val.warn{color:var(--warn)}
+.coord-kpi-val.ok{color:var(--ok)}
 .coord-kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
 
 /* CRITICAS LIST */
@@ -157,11 +194,15 @@ svg.spark .label-y{fill:var(--text-muted);font-size:9px;font-family:'JetBrains M
 </head>
 <body>
 <div class="app">
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   <!-- SIDEBAR -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <div class="brand">Dashboard Operacional</div>
-      <div class="month">Junho 2026</div>
+      <div>
+        <div class="brand">Dashboard Operacional</div>
+        <div class="month">Junho 2026</div>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()" aria-label="Fechar menu">✕</button>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Visão Geral</div>
@@ -182,6 +223,9 @@ svg.spark .label-y{fill:var(--text-muted);font-size:9px;font-family:'JetBrains M
   <!-- MAIN -->
   <div class="main">
     <header class="main-header">
+      <button class="menu-btn" onclick="toggleSidebar()" aria-label="Abrir menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
       <div>
         <div class="page-title" id="page-title">Painel Principal</div>
         <div class="page-subtitle" id="page-subtitle">Visão consolidada · Junho 2026</div>
@@ -300,6 +344,9 @@ function pct(r,p){return p>0?(r/p*100).toFixed(1)+'%':'—'}
 function isCritica(n){return n>=4}
 function isAtencao(n){return n>=1&&n<=3}
 function critClass(n){if(n>=4)return 'high';if(n>=1)return 'mid';return 'ok-text'}
+// Efetividade: <60% branco (neutro), 60–75% laranja, >=75% verde
+function eftClass(n){if(n>=75)return 'ok';if(n>=60)return 'warn';return ''}
+function eftColor(n){if(n>=75)return 'var(--ok)';if(n>=60)return 'var(--warn)';return 'var(--white)'}
 
 // ── DATA PREP ─────────────────────────────────────────────
 // Extract rede from loja name
@@ -455,7 +502,7 @@ function renderKPIs(rows){
   document.getElementById('kpi-grid').innerHTML=`
     <div class="kpi-card">
       <div class="kpi-label">Efetividade Mensal</div>
-      <div class="kpi-value ${eftPct<30?'danger':eftPct<60?'':'ok'}">${eftPct.toFixed(1)}%</div>
+      <div class="kpi-value ${eftClass(eftPct)}">${eftPct.toFixed(1)}%</div>
       <div class="kpi-sub">${fmt(totalReal)} realizados / ${fmt(totalPrev)} previstos</div>
     </div>
     <div class="kpi-card">
@@ -513,8 +560,8 @@ function renderRanking(rows){
       <td class="mono">${fmt(c.prev)}</td>
       <td class="pct-bar-cell">
         <div class="pct-bar-wrap">
-          <div class="pct-bar-track"><div class="pct-bar-fill" style="width:${barW}%"></div></div>
-          <span class="pct-val">${eftStr}</span>
+          <div class="pct-bar-track"><div class="pct-bar-fill" style="width:${barW}%;background:${eftColor(eftN)}"></div></div>
+          <span class="pct-val" style="color:${eftColor(eftN)}">${eftStr}</span>
         </div>
       </td>
       <td class="mono">${c.lojas.length}</td>
@@ -603,8 +650,8 @@ function renderCoordPage(coordName){
       <td class="mono">${d.prev}</td>
       <td class="pct-bar-cell">
         <div class="pct-bar-wrap">
-          <div class="pct-bar-track"><div class="pct-bar-fill" style="width:${barW}%"></div></div>
-          <span class="pct-val">${eftLoja.toFixed(1)}%</span>
+          <div class="pct-bar-track"><div class="pct-bar-fill" style="width:${barW}%;background:${eftColor(eftLoja)}"></div></div>
+          <span class="pct-val" style="color:${eftColor(eftLoja)}">${eftLoja.toFixed(1)}%</span>
         </div>
       </td>
     </tr>`;
@@ -617,7 +664,7 @@ function renderCoordPage(coordName){
     <div class="coord-kpis" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
       <div class="coord-kpi">
         <div class="coord-kpi-label">Efetividade do Mês</div>
-        <div class="coord-kpi-val ${eftN<30?'danger':''}">${eftN.toFixed(1)}%</div>
+        <div class="coord-kpi-val ${eftClass(eftN)}">${eftN.toFixed(1)}%</div>
         <div class="coord-kpi-sub">${fmt(totalReal)} de ${fmt(totalPrev)} previstos</div>
       </div>
       <div class="coord-kpi">
@@ -646,7 +693,7 @@ function renderCoordPage(coordName){
       </div>
       <div style="background:var(--card);border:1px solid var(--border);padding:16px">
         <div class="spark-title" style="margin-bottom:12px">Barra de Efetividade</div>
-        <div style="font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-.04em;margin-bottom:10px;color:${eftN<30?'var(--danger)':'var(--white)'}">${eftN.toFixed(1)}%</div>
+        <div style="font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-.04em;margin-bottom:10px;color:${eftColor(eftN)}">${eftN.toFixed(1)}%</div>
         <div style="height:2px;background:var(--border);margin-bottom:8px">
           <div style="height:2px;background:#fff;width:${Math.min(eftN,100)}%"></div>
         </div>
@@ -714,6 +761,20 @@ function buildCoordPages(){
   }).join('');
 }
 
+// ── MOBILE SIDEBAR ────────────────────────────────────────
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  if(sb.classList.contains('open')) closeSidebar(); else openSidebar();
+}
+
 // ── PAGE NAVIGATION ───────────────────────────────────────
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -736,6 +797,9 @@ function showPage(id){
 
   // Render coord body on first visit (or re-render)
   if(isCoord) renderCoordPage(coordName);
+
+  closeSidebar();
+  window.scrollTo(0,0);
 }
 
 // ── INIT ──────────────────────────────────────────────────
