@@ -80,6 +80,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .nav-item.active{border-left-color:var(--white);background:rgba(255,255,255,.06);color:var(--white);font-weight:500}
 .nav-item .critica-badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:rgba(255,59,59,.15);color:var(--danger);padding:1px 6px;border-radius:2px;font-weight:600}
 .nav-item .ok-badge{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--text-muted);padding:1px 6px}
+.nav-item .atencao-badge{font-size:10px;font-family:var(--mono);background:rgba(255,149,0,.15);color:#ff9500;padding:1px 6px;border-radius:2px;font-weight:600}
 .nav-item .rank-dot{width:5px;height:5px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
 .nav-item.rank-1 .rank-dot{background:var(--danger)}
 .nav-item.rank-2 .rank-dot{background:var(--danger);opacity:.7}
@@ -395,11 +396,13 @@ function buildSidebar(){
   const el=document.getElementById('coord-nav-items');
   el.innerHTML=ALL_COORDS_SORTED.map((c,i)=>{
     const lojasC=c.lojas.filter(d=>isCritica(d.criticas)).length;
+    const lojasA=c.lojas.filter(d=>isAtencao(d.criticas)).length;
+    const badges=(lojasC>0?`<span class="critica-badge">${lojasC}</span>`:'')+(lojasA>0?`<span class="atencao-badge">${lojasA}</span>`:'')||`<span class="ok-badge">OK</span>`;
     return `
     <div class="nav-item rank-${i+1<=2?i+1:i+1<=4?3:4}" onclick="showPage('coord-${c.coord}')" id="nav-coord-${c.coord}">
       <span class="rank-dot"></span>
       ${c.coord}
-      <span class="${lojasC>0?'critica-badge':'ok-badge'}">${lojasC>0?lojasC:'OK'}</span>
+      <span style="margin-left:auto;display:flex;gap:4px;align-items:center">${badges}</span>
     </div>`;
   }).join('');
 }
