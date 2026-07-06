@@ -81,6 +81,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .nav-item .critica-badge{margin-left:auto;font-size:10px;font-family:var(--mono);background:rgba(255,59,59,.15);color:var(--danger);padding:1px 6px;border-radius:2px;font-weight:600}
 .nav-item .ok-badge{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--text-muted);padding:1px 6px}
 .nav-item .atencao-badge{font-size:10px;font-family:var(--mono);background:rgba(255,149,0,.15);color:#ff9500;padding:1px 6px;border-radius:2px;font-weight:600}
+.nav-item .amarelo-badge{font-size:10px;font-family:var(--mono);background:rgba(255,214,0,.15);color:#ffd600;padding:1px 6px;border-radius:2px;font-weight:600}
 .nav-item .rank-dot{width:5px;height:5px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
 .nav-item.rank-1 .rank-dot{background:var(--danger)}
 .nav-item.rank-2 .rank-dot{background:var(--danger);opacity:.7}
@@ -344,6 +345,9 @@ function fmt(n){return n.toLocaleString('pt-BR')}
 function pct(r,p){return p>0?(r/p*100).toFixed(1)+'%':'—'}
 function isCritica(n){return n>=4}
 function isAtencao(n){return n>=1&&n<=3}
+function isVermelho(n){return n>=4}
+function isLaranja(n){return n===2||n===3}
+function isAmarelo(n){return n===1}
 function critClass(n){if(n>=4)return 'high';if(n>=1)return 'mid';return 'ok-text'}
 // Efetividade: <60% branco (neutro), 60–75% laranja, >=75% verde
 function eftClass(n){if(n>=75)return 'ok';if(n>=60)return 'warn';return ''}
@@ -395,9 +399,10 @@ const ALL_COORDS_SORTED = coordStats(DATA);
 function buildSidebar(){
   const el=document.getElementById('coord-nav-items');
   el.innerHTML=ALL_COORDS_SORTED.map((c,i)=>{
-    const lojasC=c.lojas.filter(d=>isCritica(d.criticas)).length;
-    const lojasA=c.lojas.filter(d=>isAtencao(d.criticas)).length;
-    const badges=(lojasC>0?`<span class="critica-badge">${lojasC}</span>`:'')+(lojasA>0?`<span class="atencao-badge">${lojasA}</span>`:'')||`<span class="ok-badge">OK</span>`;
+    const lojasV=c.lojas.filter(d=>isVermelho(d.criticas)).length;
+    const lojasL=c.lojas.filter(d=>isLaranja(d.criticas)).length;
+    const lojasA=c.lojas.filter(d=>isAmarelo(d.criticas)).length;
+    const badges=(lojasV>0?`<span class="critica-badge">${lojasV}</span>`:'')+(lojasL>0?`<span class="atencao-badge">${lojasL}</span>`:'')+(lojasA>0?`<span class="amarelo-badge">${lojasA}</span>`:'')||`<span class="ok-badge">OK</span>`;
     return `
     <div class="nav-item rank-${i+1<=2?i+1:i+1<=4?3:4}" onclick="showPage('coord-${c.coord}')" id="nav-coord-${c.coord}">
       <span class="rank-dot"></span>
