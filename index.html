@@ -584,7 +584,7 @@ let RAW_DATA = RAW_DATA_AGO;
 let MACRO_DATA = MACRO_DATA_AGO;
 let WEEK_DATA = WEEK_DATA_AGO;
 
-let DATA = RAW_DATA.map(d=>({...d, coord:d.coord.trim(), cidade:d.cidade.trim(), rede:extractRede(d.loja)}));
+let DATA = RAW_DATA.map(d=>({...d, coord:(d.coord||'').trim(), cidade:(d.cidade||'').trim(), rede:extractRede(d.loja)}));
 
 // Coordinator stats (sorted worst → best by criticas)
 function coordStats(rows){
@@ -1229,7 +1229,7 @@ function switchMonth(month){
   RAW_DATA = month==='julho' ? RAW_DATA_JULHO : RAW_DATA_AGO;
   MACRO_DATA = month==='julho' ? MACRO_DATA_JULHO : MACRO_DATA_AGO;
   WEEK_DATA = month==='julho' ? WEEK_DATA_JULHO : WEEK_DATA_AGO;
-  DATA = RAW_DATA.map(d=>({...d, coord:d.coord.trim(), cidade:d.cidade.trim(), rede:extractRede(d.loja)}));
+  DATA = RAW_DATA.map(d=>({...d, coord:(d.coord||'').trim(), cidade:(d.cidade||'').trim(), rede:extractRede(d.loja)}));
   ALL_COORDS_SORTED = coordStats(DATA);
   filteredData = DATA;
 
@@ -1260,7 +1260,7 @@ function switchMonth(month){
     RAW_DATA = RAW_DATA_AGO;
     MACRO_DATA = MACRO_DATA_AGO;
     WEEK_DATA = WEEK_DATA_AGO;
-    DATA = RAW_DATA.map(d=>({...d, coord:d.coord.trim(), cidade:d.cidade.trim(), rede:extractRede(d.loja)}));
+    DATA = RAW_DATA.map(d=>({...d, coord:(d.coord||'').trim(), cidade:(d.cidade||'').trim(), rede:extractRede(d.loja)}));
     ALL_COORDS_SORTED = coordStats(DATA);
     filteredData = DATA;
   }
