@@ -570,6 +570,15 @@ async function loadAgostoFromSupabase(){
       return { label:`S${i}`, r, p, pct: p > 0 ? Math.round(r/p*1000)/10 : 0 };
     });
 
+    let maxTs = null;
+    data.forEach(r=>{
+      if(r.updated_at){
+        const t = new Date(r.updated_at);
+        if(!maxTs || t > maxTs) maxTs = t;
+      }
+    });
+    if(maxTs) lastUpdatedAgo = maxTs;
+
     console.log('Dados de agosto carregados do Supabase:', totalLojas, 'lojas');
     return true;
   }catch(e){
@@ -580,6 +589,7 @@ async function loadAgostoFromSupabase(){
 
 // ── MONTH STATE ────────────────────────────────────────────
 let currentMonth = 'ago'; // 'julho' (estático/fechado) | 'ago' (painel atual)
+let lastUpdatedAgo = null; // Date real da última sincronização, vinda do Supabase
 let RAW_DATA = RAW_DATA_AGO;
 let MACRO_DATA = MACRO_DATA_AGO;
 let WEEK_DATA = WEEK_DATA_AGO;
@@ -1222,7 +1232,14 @@ function renderBaixoGiroPage(){
 
 // ── MONTH SWITCHING ────────────────────────────────────────
 function monthLabel(m){ return m==='julho' ? 'Julho 2026' : 'Agosto 2026'; }
-function updateDateLabel(m){ return m==='julho' ? '01/08/2026' : '05/08/2026'; }
+function formatarDataHora(d){
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function updateDateLabel(m){
+  if(m === 'ago' && lastUpdatedAgo) return formatarDataHora(lastUpdatedAgo);
+  return m==='julho' ? '01/08/2026' : '05/08/2026';
+}
 
 function switchMonth(month){
   currentMonth = month;
@@ -1270,6 +1287,7 @@ function switchMonth(month){
   renderHome();
   renderBaixoGiroPage();
   document.getElementById('nav-month-ago').classList.add('month-active');
+  document.getElementById('update-date-label').textContent = updateDateLabel(currentMonth);
 })();
 </script>
 </body>
